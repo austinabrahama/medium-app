@@ -24,3 +24,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom app styles */
+@layer components {
+  .app-bg {
+    background: #F7F4ED;
+  }
+  
+  .medium-bg {
+    @apply bg-orange-50;
+  }
+}

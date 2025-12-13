@@ -1,0 +1,14 @@
+.appBackground {
+  background: #F7F4ED;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.pageWrapper {
+  background: #F7F4ED;
+}
