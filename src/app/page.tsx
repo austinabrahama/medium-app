@@ -1,8 +1,32 @@
 import Head from "next/head";
 import Header from "@/components/Header";
-import { sanityClient } from "../../sanity";
+import { sanityClient, urlFor } from "../../sanity";
+import { Post } from "../../typings";
+import Link from 'next/link'
 
-const Home = ({ posts }) => {
+const Home = async () => {
+  // Fetch posts directly in the component (App Router way)
+  const posts = await fetchPosts();
+
+  async function fetchPosts() {
+    try {
+      const query = `*[_type=="post"]{
+        _id,
+        title,
+        slug,
+        author->{
+          name,
+          image
+        },
+        mainImage
+      }`;
+      return await sanityClient.fetch(query);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      return [];
+    }
+  }
+
   return (
     <div className="min-h-screen mx-auto max-w-7xl">
       <Head>
@@ -28,42 +52,28 @@ const Home = ({ posts }) => {
         />
       </div>
 
-      <div className="p-10">
-        <h1 className="text-3xl">Latest Posts
-          </h1>
+      <div className="grid grid-cols-1 gap-3 p-2 sm:grid-cols-2 md:gap-6 md:p-6 lg:grid-cols-3">
+        {posts.length > 0 ? (
+          posts.map((post: Post) => (
+            <Link href={`/post/${post.slug.current}`} key={post._id}>
+              <div className="group cursor-pointer overflow-hidden rounded-lg border">
+                <img src={urlFor(post.mainImage).url()} alt={post.title} />
+                <div className="flex justify-between bg-white p-5">
+                  <div>
+                    <p className="text-lg font-bold">{post.title}</p>
+                    <p className="text-sm">by {post.author.name}</p>
+                  </div>
+                  <img src={urlFor(post.author.image).url()} alt={post.author.name} className="h-12 w-12 rounded-full" />
+                </div>
+              </div>
+            </Link>
+          ))
+        ) : (
+          <p className="text-gray-500">No posts available.</p>
+        )}
       </div>
     </div>
   );
 }
 
 export default Home;
-
-export const getServerSideProps = async () => {
-  try {
-  const query = `*[_type=="post"]{
-    _id,
-    title,
-    slug,
-    author->{
-      name,
-      image
-    },
-    mainImage
-  }`;
-
-  const posts = await sanityClient.fetch(query);
-
-  return {
-    props: {
-      posts,
-    },
-  };
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    return {
-      props: {
-        posts: [],
-      },
-    };
-  }
-}
